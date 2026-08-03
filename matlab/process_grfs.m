@@ -19,6 +19,8 @@ if ~exist(OUTPUT_PATH, 'dir')
     mkdir(OUTPUT_PATH)
 end
 
+MARKER_ROTATIONS = [-pi / 2, pi / 2, 0];
+
 C3D_FILE = fullfile(INPUT_PATH,strcat(TRIAL,'.c3d'));
 fprintf("Input File: %s\n",C3D_FILE);
 fprintf("Output Path: %s\n", OUTPUT_PATH);
@@ -61,6 +63,39 @@ fprintf(mID,"Frame#\tTime\t%s\n", point_names_header);
 points_index = 1:num_markers;
 point_xyz_header = sprintf("X%d\tY%d\tZ%d\t",points_index,points_index,points_index);
 fprintf(mID,"\t\t%s\n", point_xyz_header);
+
+% Rotate points to OpenSim frame
+% [0,-1,0]
+% [0, 0,1]
+% [-1,0,0]
+rotm = eulang2rotmat(MARKER_ROTATIONS,'XZY');
+% disp(rotm)
+
+points = c3d.data.points;
+sz = size(points);
+points_out = zeros(sz);
+increment = 1.0 / point_frequency;
+
+end_time = increment * num_frames;
+time = linspace(0.0,end_time,num_frames);
+
+% Rotate the table
+for i = 1:sz(3)
+    for j = 1:sz(2)
+        points_out(:,j,i) = rotm * points(:,j,i);
+    end
+end
+
+% Output the marker file
+for i = 1:sz(3)
+    % MATLAB uses 1-based indexing :(
+    frame = i -1;
+    fprintf(mID,"%d\t%0.4f\t",frame,time(i));
+    points_str = sprintf("%0.11f\t",points_out(:,:,i));
+    % Remap NaNs to OpenSim compatible nan string
+    points_str = strrep(points_str, 'NaN', 'nan');
+    fprintf(mID, '%s\n', points_str);
+end
 
 fclose(mID);
 fprintf("[SUCCESS] wrote file: %s\n", INPUT_PATH);
