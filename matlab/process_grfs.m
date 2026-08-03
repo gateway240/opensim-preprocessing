@@ -85,7 +85,7 @@ points_out = pagemtimes(rotm, points);
 for i = 1:num_frames
     % MATLAB uses 1-based indexing :(
     frame = i - 1;
-    fprintf(mID,"%d\t%0.4f\t",frame,time(i));
+    fprintf(mID,"%d\t%0.16f\t",frame,time(i));
     points_str = sprintf("%0.11f\t",points_out(:,:,i));
     % Remap NaNs to OpenSim compatible nan string
     points_str = strrep(points_str, 'NaN', 'nan');
@@ -93,4 +93,52 @@ for i = 1:num_frames
 end
 
 fclose(mID);
-fprintf("[SUCCESS] wrote file: %s\n", INPUT_PATH);
+fprintf("[SUCCESS] wrote file: %s\n", MARKER_FILE);
+
+%% Marker Extraction - TRIAL_analog.sto file 
+ANALOG_FILE = fullfile(OUTPUT_PATH, strcat(TRIAL,"_analog.sto"));
+
+analog_frames_num = length(c3d.data.analogs);
+num_analogs = c3d.parameters.ANALOG.USED.DATA;
+analog_frequency = c3d.parameters.ANALOG.RATE.DATA;
+analog_labels = c3d.parameters.ANALOG.LABELS.DATA;
+analog_names = string(analog_labels);
+analog_cols = c3d.header.analogs.size;
+
+fprintf('%% ---- Analog PARAMETERS ---- %%\n');
+fprintf('Number of frames = %d\n', analog_frames_num);
+fprintf('Number of analogs = %d\n', num_analogs);
+fprintf('Analog frame rate = %d Hz\n', analog_frequency);
+fprintf('Analog Names: %s\n', sprintf('%s, ', analog_names));
+
+mID = fopen(ANALOG_FILE,'w');
+
+% Construct header
+fprintf(mID,"DataRate=%0.6f\n",analog_frequency);
+fprintf(mID,"nColumns=%d\n",num_analogs);
+fprintf(mID,"nRows=%d\n", analog_frames_num);
+fprintf(mID,"DataType=double\n");
+fprintf(mID,"version=3\n");
+fprintf(mID,"OpenSimVersion=4.6\n");
+fprintf(mID,"endheader\n");
+point_names_header = sprintf('%s\t', analog_names);
+fprintf(mID,"time\t%s\n", point_names_header);
+
+% Build the data file
+analogs = c3d.data.analogs;
+analog_increment = 1.0 / analog_frequency;
+
+end_time = analog_increment * analog_frames_num;
+time = linspace(0.0,end_time,analog_frames_num);
+
+% Output the marker file
+for i = 1:analog_frames_num
+    fprintf(mID,"%0.16f\t",time(i));
+    points_str = sprintf("%0.16f\t",analogs(i,:));
+    % Remap NaNs to OpenSim compatible nan string
+    points_str = strrep(points_str, 'NaN', 'nan');
+    fprintf(mID, '%s\n', points_str);
+end
+
+fclose(mID);
+fprintf("[SUCCESS] wrote file: %s\n", ANALOG_FILE);
