@@ -72,24 +72,19 @@ rotm = eulang2rotmat(MARKER_ROTATIONS,'XZY');
 % disp(rotm)
 
 points = c3d.data.points;
-sz = size(points);
-points_out = zeros(sz);
 increment = 1.0 / point_frequency;
 
 end_time = increment * num_frames;
 time = linspace(0.0,end_time,num_frames);
 
 % Rotate the table
-for i = 1:sz(3)
-    for j = 1:sz(2)
-        points_out(:,j,i) = rotm * points(:,j,i);
-    end
-end
+% Apply the transformation to every point (XYZ combo) for all frames
+points_out = pagemtimes(rotm, points);
 
 % Output the marker file
-for i = 1:sz(3)
+for i = 1:num_frames
     % MATLAB uses 1-based indexing :(
-    frame = i -1;
+    frame = i - 1;
     fprintf(mID,"%d\t%0.4f\t",frame,time(i));
     points_str = sprintf("%0.11f\t",points_out(:,:,i));
     % Remap NaNs to OpenSim compatible nan string
