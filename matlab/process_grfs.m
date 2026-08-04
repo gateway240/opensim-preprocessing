@@ -206,104 +206,32 @@ end
 normalized_cutoff = CUTOFF_FREQUENCY / (analog_frequency / 2);
 [b, a] = butter(FILTER_ORDER, normalized_cutoff, 'low');
 
-% 2 force plates * 6 GRF values = 12;
-grf_filtered = zeros(analog_frames_num, 12);
-count = 1;
+fp_active = [FP_L, FP_R];
+num_inputs = sum(count(grf_mapping(:,1),FP_L));
+num_outputs = length(grf_mapping)/ length(fp_active);
+grf_filtered = zeros(analog_frames_num, num_inputs * length(fp_active));
+
+grf_index = 1;
 for i = 1:length(grf_mapping)
     index = str2double(grf_mapping(i,3));
     if index > 0
-        grf_filtered(:,count) = filtfilt(b, a, analogs(:,index));
-        count = count + 1;
+        grf_filtered(:,grf_index) = filtfilt(b, a, analogs(:,index));
+        grf_index = grf_index + 1;
     end
 end
 
-function frame = compute_pf_reference_frame(corners)
-axis_x = corners(:,1) - corners(:,2);
-axis_y = corners(:,1) - corners(:,4);
-axis_z = cross(axis_x, axis_y);
-axis_y = cross(axis_z, axis_x);
-
-% Same normalization as ezc3d
-% axis_x = axis_x / sqrt(dot(axis_x,axis_x));
-axis_x = normalize(axis_x,"norm");
-axis_y = normalize(axis_y,"norm");
-axis_z = normalize(axis_z,"norm");
-
-frame = [axis_x(:)'; axis_y(:)'; axis_z(:)'];
-end
-% Setup force plate information for final calculation
+% Setup grf data structure information for final calculation
 grfs_final = zeros(analog_frames_num, length(grf_mapping));
+for j = 1:numel(fp_active)
+    fp_index = fp_active(j);
+    fp = all_pf(str2double(fp_index));
+    stride_in = (j-1)*num_inputs;
 
-
-for j = [FP_L, FP_R]
-    % Left leg
-    if j == FP_L
-        fp = all_pf(str2double(j));
-        corners = fp.corners;
-        origin = fp.origin;
-        ref_frame = compute_pf_reference_frame(corners);
-        mean_corners = mean(corners,2);
-        force = grf_filtered(:,1:3);
-        moment = grf_filtered(:,4:6);
-    elseif j == FP_R
-        fp = all_pf(str2double(j));
-        corners = fp.corners;
-        origin = fp.origin;
-        ref_frame = compute_pf_reference_frame(corners);
-        mean_corners = mean(corners,2);
-        force = grf_filtered(:,7:9);
-        moment = grf_filtered(:,10:12);
-    end
-    for i = 1:analog_frames_num
-
-        f = force(i,:);
-        f_raw = f;
-        m = moment(i,:);
-        m_raw = m + cross(f,origin);
-
-        fz = f(3);
-        valid = -fz >= GRF_CUTOFF;
-
-        cop_raw = [-m_raw(2) / fz, m_raw(1) / fz, 0];
-
-        f = ref_frame * f_raw';
-        m = ref_frame * m_raw';
-        cop = ref_frame * cop_raw' + mean_corners;
-        tz = ref_frame * (m_raw' - cross(f_raw', -1 .* cop_raw'));
-
-        f = rotm * f;
-        m = rotm * m;
-        cop = rotm * cop;
-        tz = rotm * tz;
-
-        % Convert from mm to m
-        cop = cop ./ 1000;
-        tz = tz ./ 1000;
-
-        % Corresponds with OpenSim extract ForceLocation::CenterOfPressure
-        % Force 1:3
-        % COP 4:6
-        % Moment 7:9
-        if j == FP_L
-            grfs_final(i,1:3) = f;
-            if valid
-                grfs_final(i,4:6) = cop;
-                grfs_final(i,7:9) = tz;
-            else
-                grfs_final(i,4:6) = NaN;
-                grfs_final(i,7:9) = NaN;
-            end
-        elseif j == FP_R
-            grfs_final(i,10:12) = f;
-            if valid
-                grfs_final(i,13:15) = cop;
-                grfs_final(i,16:18) = tz;
-            else
-                grfs_final(i,13:15) = NaN;
-                grfs_final(i,16:18) = NaN;
-            end
-        end
-    end
+    data = grf_filtered(:, 1+stride_in: num_inputs+stride_in);
+    
+    stride_out =  (j-1)*num_outputs;
+    result = calculateFpGrf(data,fp,rotm,GRF_CUTOFF);
+    grfs_final(:, 1+stride_out: num_outputs+stride_out) = result;
 end
 % Output the marker file
 for i = 1:analog_frames_num
