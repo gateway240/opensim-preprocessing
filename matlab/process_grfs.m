@@ -8,14 +8,19 @@ clear;
 % On other platforms, the file separator might be a different character.
 HOME = getenv("HOME");
 DATASET_PATH = fullfile(HOME,"data","kuopio-full-body-dataset","s01_raw");
-OUTPUT_DIR = fullfile(HOME,"data","kuopio-full-body-dataset-test","processed");
+OUTPUT_DIR = fullfile(HOME,"data","kuopio-full-body-dataset-results","s02_extracted");
 
 PARTICIPANT = '09';
 MOCAP_SUBDIR = 'mocap';
 TRIAL = 'jogging';
 
-OUTPUT_PATH = fullfile(OUTPUT_DIR, PARTICIPANT, MOCAP_SUBDIR);
+% Files will be named TRIAL+SUFFIX
+MARKERS_SUFFIX = "_markers.trc";
+ANALOGS_SUFFIX = "_analog_custom.sto";
+GRFS_SUFFIX = "_grfs_custom.sto";
+
 INPUT_PATH = fullfile(DATASET_PATH, PARTICIPANT, MOCAP_SUBDIR);
+OUTPUT_PATH = fullfile(OUTPUT_DIR, PARTICIPANT);
 if ~exist(OUTPUT_PATH, 'dir')
     mkdir(OUTPUT_PATH)
 end
@@ -45,7 +50,7 @@ fprintf("Output Path: %s\n", OUTPUT_PATH);
 fprintf("C3D file loaded! Found %d points.\n", c3d.parameters.POINT.USED.DATA);
 
 %% Marker Extraction - TRIAL_markers.trc file
-marker_file = fullfile(OUTPUT_PATH, strcat(TRIAL,"_markers.trc"));
+marker_file = fullfile(OUTPUT_PATH, strcat(TRIAL,MARKERS_SUFFIX));
 point_frequency = c3d.parameters.POINT.RATE.DATA;
 point_units = c3d.parameters.POINT.UNITS.DATA{1};
 % Build header
@@ -58,7 +63,7 @@ fprintf("Status: %d\n%s", status, output);
 fprintf("[SUCCESS] wrote file: %s\n", marker_file);
 
 %% Analog Extraction - TRIAL_analog.sto file
-analog_file = fullfile(OUTPUT_PATH, strcat(TRIAL,"_analog.sto"));
+analog_file = fullfile(OUTPUT_PATH, strcat(TRIAL,ANALOGS_SUFFIX));
 analog_frequency = c3d.parameters.ANALOG.RATE.DATA;
 % Build header
 analog_columns = string(c3d.parameters.ANALOG.LABELS.DATA);
@@ -70,7 +75,7 @@ fprintf("Status: %d\n%s", status, output);
 fprintf("[SUCCESS] wrote file: %s\n", analog_file);
 
 %% GRF Extraction - TRIAL_grfs.sto file
-grf_file = fullfile(OUTPUT_PATH, strcat(TRIAL,"_grfs.sto"));
+grf_file = fullfile(OUTPUT_PATH, strcat(TRIAL,GRFS_SUFFIX));
 
 % Mapping from analog channel name to GRF name expected in OpenSim
 % [name in file, result key, index]
@@ -113,6 +118,8 @@ normalized_cutoff = CUTOFF_FREQUENCY / (analog_frequency / 2);
 [b, a] = butter(FILTER_ORDER, normalized_cutoff, 'low');
 
 fp_active = [FP_L, FP_R];
+num_inputs = sum(count(grf_mapping(:,1),FP_L));
+num_outputs = length(grf_mapping)/ length(fp_active);
 grf_filtered = zeros(length(analogs), num_inputs * length(fp_active));
 
 grf_index = 1;
@@ -126,8 +133,6 @@ end
 
 % Re-calculate COP from analog force and moment signal
 grfs_final = zeros(length(analogs), length(grf_mapping));
-num_inputs = sum(count(grf_mapping(:,1),FP_L));
-num_outputs = length(grf_mapping)/ length(fp_active);
 for j = 1:numel(fp_active)
     fp_index = fp_active(j);
     fp = all_pf(str2double(fp_index));
