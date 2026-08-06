@@ -36,7 +36,7 @@ rotm = eulang2rotmat(MARKER_ROTATIONS,'XZY');
 % Force Plate (FP) indexes for the left and right foot.
 FP_L = '4';
 FP_R = '5';
-GRF_CUTOFF = 1;
+GRF_CUTOFF = 2; %N
 
 % Low-pass parameters
 CUTOFF_FREQUENCY = 6; %Hz
@@ -76,6 +76,7 @@ fprintf("[SUCCESS] wrote file: %s\n", analog_file);
 
 %% GRF Extraction - TRIAL_grfs.sto file
 grf_file = fullfile(OUTPUT_PATH, strcat(TRIAL,GRFS_SUFFIX));
+fprintf("Starting on file: %s\n", grf_file);
 
 % Mapping from analog channel name to GRF name expected in OpenSim
 % [name in file, result key, index]
@@ -114,8 +115,23 @@ for i = 1:length(analog_columns)
 end
 
 % Low-pass filter raw signals
-normalized_cutoff = CUTOFF_FREQUENCY / (analog_frequency / 2);
-[b, a] = butter(FILTER_ORDER, normalized_cutoff, 'low');
+% THIS doesn't work :(
+% normalized_cutoff = 6 / (analog_frequency / 2);
+% [b, a] = butter(FILTER_ORDER, normalized_cutoff, 'low');
+
+% This works
+Fc = CUTOFF_FREQUENCY;
+Fs = analog_frequency;
+% Second order filter forwards-backwards is effectively fourth order
+n = 2;
+% From Winter Biomechanics and Motor Control p. 69
+C = (2^(1/2)-1)^(1/(2*n));
+
+Fc_corrected = Fc/C;
+
+Wn = Fc_corrected/(Fs/2);
+
+[b,a] = butter(n,Wn,'low');
 
 fp_active = [FP_L, FP_R];
 num_inputs = sum(count(grf_mapping(:,1),FP_L));
@@ -141,8 +157,11 @@ for j = 1:numel(fp_active)
     data = grf_filtered(:, 1+stride_in: num_inputs+stride_in);
 
     stride_out =  (j-1)*num_outputs;
-    grfs_final(:, 1+stride_out: num_outputs+stride_out) = ...
-        calculateFpGrf(data,fp,rotm,GRF_CUTOFF);
+    grf_result = calculateFpGrf(data,fp,rotm,GRF_CUTOFF); 
+    % Fill NaNs on the columns - OpenSim ID can't handle NaN values
+    final_result = fillmissing(grf_result,"linear",1); 
+    grfs_final(:, 1+stride_out: num_outputs+stride_out) = final_result;
+        
 end
 % Write the sto file
 [status, output] = writeStoFile(grfs_final,analog_frequency,grf_columns,grf_file);

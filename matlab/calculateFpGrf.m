@@ -47,6 +47,7 @@ for i = 1:length_frames
     % Convert from mm to m
     cop = cop ./ 1000;
     tz = tz ./ 1000;
+    % m = m ./1000;
 
     if ~valid
         cop = NaN;
