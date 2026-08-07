@@ -67,5 +67,6 @@ for i = 1:num_frames
 end
 
 fclose(mID);
+output = output + sprintf("[SUCCESS] wrote file: %s\n", output_path);
 
 end
