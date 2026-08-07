@@ -16,7 +16,7 @@ MATLAB testing and processing has been developed and tested on Linux with MATLAB
 2. Install the `Signal Processing Toolbox by MathWorks` in MATLAB for low-pass filtering
 3. Download the [ezc3d MATLAB package](https://github.com/pyomeca/ezc3d/releases) for your OS
 4. Unzip the folder, and add it to the MATLAB path (`Home`->`Set Path`->`Add Folder` & click `Save path for future sessions`).
-
+5. Set the parameters in `matlab/process_c3d_trial.m` and run it!
 
 
 # Python

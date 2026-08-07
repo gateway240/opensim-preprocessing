@@ -43,12 +43,13 @@ GRF_CUTOFF = 2; %N
 CUTOFF_FREQUENCY = 6; %Hz
 FILTER_ORDER = 2; % forward backward filtering doubles it (so 2 = 4th order)
 
-C3D_FILE = fullfile(INPUT_PATH,strcat(TRIAL,'.c3d'));
-fprintf("Input File: %s\n",C3D_FILE);
 fprintf("Output Path: %s\n", OUTPUT_PATH);
 %% C3D Loading
-[c3d, all_pf] = ezc3dRead(convertStringsToChars(C3D_FILE));
-fprintf("C3D file loaded! Found %d points.\n", c3d.parameters.POINT.USED.DATA);
+c3d_file = fullfile(INPUT_PATH,strcat(TRIAL,'.c3d'));
+fprintf("Starting to read c3d file: %s\n",c3d_file);
+[c3d, all_pf] = ezc3dRead(convertStringsToChars(c3d_file));
+fprintf("C3D file loaded! Found %d markers and %d force plates!\n", ...
+    c3d.parameters.POINT.USED.DATA, length(all_pf));
 
 %% Marker Extraction - TRIAL_markers.trc file
 marker_file = fullfile(OUTPUT_PATH, strcat(TRIAL,MARKERS_SUFFIX));
@@ -76,7 +77,7 @@ fprintf("Starting on file: %s\n", grf_file);
     FP_L, FP_R, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_CUTOFF);
 fprintf("Status: %d\n%s", status, output);
 
-%% GRF Extraction - TRIAL_grfs_wrong.sto file
+%% GRF Extraction [WRONG!] - TRIAL_grfs_wrong.sto file
 grf_file = fullfile(OUTPUT_PATH, strcat(TRIAL,GRFS_WRONG_SUFFIX));
 fprintf("Starting on file: %s\n", grf_file);
 [status, output] = extractGrfsWrong(c3d, all_pf, grf_file, rotm, ...
