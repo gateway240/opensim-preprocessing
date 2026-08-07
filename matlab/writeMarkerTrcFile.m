@@ -42,7 +42,8 @@ header = sprintf('%s\t\t\t', columns);
 fprintf(mID,"Frame#\tTime\t%s\n", header);
 
 p_idx = 1:num_cols;
-point_xyz_header = sprintf("X%d\tY%d\tZ%d\t",p_idx,p_idx,p_idx);
+point_xyz_header = strjoin(arrayfun(@(n) sprintf('X%d\tY%d\tZ%d', n, n, n), ...
+    p_idx, 'UniformOutput', false), '\t');
 fprintf(mID,"\t\t%s\n", point_xyz_header);
 
 
