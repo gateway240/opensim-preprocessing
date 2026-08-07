@@ -18,6 +18,7 @@ TRIALS = [
     ["jogging" 4 5 ]
     ["walking" 4 5 ]
     ["squats_deep" 3 2]
+    ["squat_jumps" 3 2]
     ];
 
 % Files will be named TRIAL+SUFFIX
