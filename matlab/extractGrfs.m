@@ -47,7 +47,7 @@ Wn = Fc_corrected/(Fs/2);
 [b,a] = butter(n,Wn,'low');
 
 fp_active = [fp_l, fp_r];
-num_inputs = sum(count(grf_mapping(:,1),fp_l));
+num_inputs = sum(count(grf_mapping(:,1),string(fp_l)));
 num_outputs = length(grf_mapping)/ length(fp_active);
 grf_filtered = zeros(length(analogs), num_inputs * length(fp_active));
 
@@ -64,7 +64,7 @@ end
 grfs_final = zeros(length(analogs), length(grf_mapping));
 for j = 1:numel(fp_active)
     fp_index = fp_active(j);
-    fp = all_pf(str2double(fp_index));
+    fp = all_pf(fp_index);
     stride_in = (j-1)*num_inputs;
 
     data = grf_filtered(:, 1+stride_in: num_inputs+stride_in);

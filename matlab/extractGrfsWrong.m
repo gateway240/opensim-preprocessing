@@ -48,13 +48,13 @@ Wn = Fc_corrected/(Fs/2);
 
 fp_active = [fp_l, fp_r];
 
-num_inputs = sum(count(grf_mapping(:,1),fp_l));
+num_inputs = sum(count(grf_mapping(:,1),string(fp_l)));
 num_outputs = length(grf_mapping)/ length(fp_active);
 grfs_prior = zeros(length(analogs), length(grf_mapping));
 % Extract force, COP, and Tz from FP
 for i = 1:numel(fp_active)
     fp_index = fp_active(i);
-    fp = all_pf(str2double(fp_index));
+    fp = all_pf(fp_index);
     stride_out =  (i-1)*num_outputs;
     data = zeros(length(analogs), num_outputs);
     for j = 1:length(analogs)
