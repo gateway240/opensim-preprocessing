@@ -48,7 +48,7 @@ CUTOFF_FREQUENCY = 6; %Hz
 FILTER_ORDER = 2; % forward backward filtering doubles it (so 2 = 4th order)
 
 fprintf("Output Path: %s\n", OUTPUT_PATH);
-for i = 1:length(TRIALS)
+for i = 1:size(TRIALS,1)
     trial = TRIALS(i,:);
     trial_name = trial(1);
     fp_l = str2double(trial(2));
