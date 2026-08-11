@@ -7,17 +7,14 @@ clear;
 % On Windows® platforms, the file separator character is a backslash (\).
 % On other platforms, the file separator might be a different character.
 HOME = getenv("HOME");
-DATASET_PATH = fullfile(HOME,"data","kuopio-full-body-dataset","s01_raw");
-OUTPUT_DIR = fullfile(HOME,"data","kuopio-full-body-dataset-results","s02_extracted");
+DATASET_PATH = fullfile(HOME,"data","FreeMoment");
+OUTPUT_DIR = fullfile(HOME,"data","FreeMoment-results");
 
-PARTICIPANT = '09';
-MOCAP_SUBDIR = 'mocap';
+PARTICIPANT = 'Test';
+MOCAP_SUBDIR = '.';
 % name, left foot force plate (fp) index, right foot fp index
 TRIALS = [
-    ["static_cal" 0 0 ]
-    ["jogging" 4 5 ]
-    ["walking" 4 5 ]
-    ["squats_deep" 3 2]
+    ["Test" 3 2 ]
     ];
 
 % Files will be named TRIAL+SUFFIX
@@ -26,7 +23,7 @@ ANALOGS_SUFFIX = "_analog_custom.sto";
 GRFS_SUFFIX = "_grfs_custom.sto";
 GRFS_WRONG_SUFFIX = "_grfs_wrong.sto";
 
-INPUT_PATH = fullfile(DATASET_PATH, PARTICIPANT, MOCAP_SUBDIR);
+INPUT_PATH = fullfile(DATASET_PATH, PARTICIPANT);
 OUTPUT_PATH = fullfile(OUTPUT_DIR, PARTICIPANT);
 if ~exist(OUTPUT_PATH, 'dir')
     mkdir(OUTPUT_PATH)
@@ -47,7 +44,7 @@ CUTOFF_FREQUENCY = 6; %Hz
 FILTER_ORDER = 2; % forward backward filtering doubles it (so 2 = 4th order)
 
 fprintf("Output Path: %s\n", OUTPUT_PATH);
-for i = 1:length(TRIALS)
+for i = 1:size(TRIALS,1)
     trial = TRIALS(i,:);
     trial_name = trial(1);
     fp_l = str2double(trial(2));
