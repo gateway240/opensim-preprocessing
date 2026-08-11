@@ -1,7 +1,7 @@
 # opensim-preprocessing
 This repository will help you pre-process your motion capture data for use in OpenSim. You DO NOT need to have the OpenSim package installed or configured to use these scripts. This repository is for PREPARING your data for use in OpenSim and does not require OpenSim as a dependency.
 
-OpenSim currently only support 3rd-order Butterworth low-pass filtering. With these simple processing scripts, you can apply any filter of any order to existing OpenSim `.mot` and `.sto` data files. Additionally, these scripts provide an easy and customizable way to properly apply low-pass filtering to your ground reaction force data. 
+OpenSim currently only support 3rd-order Butterworth low-pass filtering. With these simple processing scripts, you can extract `.c3d` files, apply any filter order or cutoff frequency and obtain the resulting OpenSim `.mot` and `.sto` data files. Additionally, these scripts recalculate the COP after low-pass filtering of the raw data to ensure data accuracy. 
 
 The [ezc3d](https://github.com/pyomeca/ezc3d/) library is excellent for `.c3d` file processing and it must be installed prior to running the processing scripts.
 
