@@ -7,18 +7,17 @@ clear;
 % On Windows® platforms, the file separator character is a backslash (\).
 % On other platforms, the file separator might be a different character.
 HOME = getenv("HOME");
-DATASET_PATH = fullfile(HOME,"data","kuopio-full-body-dataset","s01_raw");
-OUTPUT_DIR = fullfile(HOME,"data","kuopio-full-body-dataset-results","s02_extracted");
+DATASET_PATH = fullfile(HOME,"data","LiisaLilja","20190627170105_Testi3");
+OUTPUT_DIR = fullfile(HOME,"data","LiisaLiljaOutput","s02_extracted");
 
-PARTICIPANT = '09';
-MOCAP_SUBDIR = 'mocap';
+
 % name, left foot force plate (fp) index, right foot fp index
 TRIALS = [
-    ["static_cal" 0 0 ]
-    ["jogging" 4 5 ]
-    ["walking" 4 5 ]
-    ["squats_deep" 3 2]
-    ["squat_jumps" 3 2]
+    ["Testi3\28ms_lyhyt" 3 3 ]
+    ["Testi3\28ms03" 3 3 ]
+    ["Testi3\32ms_lyhyt01" 3 3 ]
+    ["Testi3\32ms05" 3 3]
+    ["Testi3\Liisa Cal 02" 3 3]
     ];
 
 % Files will be named TRIAL+SUFFIX
@@ -27,8 +26,8 @@ ANALOGS_SUFFIX = "_analog_custom.sto";
 GRFS_SUFFIX = "_grfs_custom.sto";
 GRFS_WRONG_SUFFIX = "_grfs_wrong.sto";
 
-INPUT_PATH = fullfile(DATASET_PATH, PARTICIPANT, MOCAP_SUBDIR);
-OUTPUT_PATH = fullfile(OUTPUT_DIR, PARTICIPANT);
+INPUT_PATH = fullfile(DATASET_PATH);
+OUTPUT_PATH = fullfile(OUTPUT_DIR);
 if ~exist(OUTPUT_PATH, 'dir')
     mkdir(OUTPUT_PATH)
 end
@@ -59,7 +58,8 @@ for i = 1:size(TRIALS,1)
     [c3d, all_pf] = ezc3dRead(convertStringsToChars(c3d_file));
     fprintf("C3D file loaded! Found %d markers and %d force plates!\n", ...
         c3d.parameters.POINT.USED.DATA, length(all_pf));
-
+    trial_name = strrep(trial_name,'\','_');
+    trial_name = strrep(trial_name,' ','_');
     %% Marker Extraction - TRIAL_markers.trc file
     marker_file = fullfile(OUTPUT_PATH, strcat(trial_name,MARKERS_SUFFIX));
     fprintf("Starting on file: %s\n", marker_file);
