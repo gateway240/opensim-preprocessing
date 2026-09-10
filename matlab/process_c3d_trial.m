@@ -10,7 +10,7 @@ HOME = getenv("HOME");
 DATASET_PATH = fullfile(HOME,"data","LiisaLilja","20190627170105_Testi3");
 OUTPUT_DIR = fullfile(HOME,"data","LiisaLiljaOutput","s02_extracted");
 
-
+PARTICIPANT = '01';
 % name, left foot force plate (fp) index, right foot fp index
 TRIALS = [
     ["Testi3\28ms_lyhyt" 3 3 ]
@@ -27,7 +27,7 @@ GRFS_SUFFIX = "_grfs_custom.sto";
 GRFS_WRONG_SUFFIX = "_grfs_wrong.sto";
 
 INPUT_PATH = fullfile(DATASET_PATH);
-OUTPUT_PATH = fullfile(OUTPUT_DIR);
+OUTPUT_PATH = fullfile(OUTPUT_DIR, PARTICIPANT);
 if ~exist(OUTPUT_PATH, 'dir')
     mkdir(OUTPUT_PATH)
 end
