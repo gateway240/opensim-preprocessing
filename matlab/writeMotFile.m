@@ -1,10 +1,10 @@
-function [status, output] = writeMotFile(data, frequency, columns, output_path)
+function [status, output] = writeMotFile(data, labels, header, output_path)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 arguments (Input)
     data
-    frequency
-    columns
+    labels
+    header
     output_path
 end
 
@@ -22,35 +22,35 @@ num_frames = sz(1);
 num_cols = sz(2);
 
 output = output + sprintf('%% ---- File PARAMETERS ---- %%\n');
-output = output + sprintf('Number of frames = %d\n', num_frames);
+output = output + sprintf('Number of rows = %d\n', num_frames);
 output = output + sprintf('Number of columns = %d\n', num_cols);
-output = output + sprintf('Frame rate = %d Hz\n', frequency);
-output = output + sprintf('Columns: %s\n', sprintf('%s, ', columns));
+output = output + sprintf('Columns: %s\n', sprintf('%s, ', labels));
 
 % Construct header
-fprintf(mID,"DataRate=%0.6f\n",frequency);
-fprintf(mID,"nColumns=%d\n",num_cols + 1); % +1 for time
-fprintf(mID,"nRows=%d\n", num_frames);
-fprintf(mID,"DataType=double\n");
-fprintf(mID,"version=3\n");
-fprintf(mID,"OpenSimVersion=4.6\n");
+fprintf(mID,"Coordinates");
+fields = fieldnames(header);
+
+for i = 1:numel(fields)
+    field = fields{i};
+    value = header.(field);
+
+    fprintf(mID, "%s=%s\n", field, string(value));
+end
+
+fprintf(mID, "\nUnits are S.I. units (second, meters, Newtons, ...)\n" + ...
+    " If the header above contains a line with 'inDegrees'," + ...
+    " this indicates whether rotational values are in degrees (yes) or radians (no).)\n\n");
 fprintf(mID,"endheader\n");
-header = sprintf('%s\t', columns);
-fprintf(mID,"time\t%s\n", header);
+header = sprintf('%s\t', labels);
+fprintf(mID,"%s\n", header);
 
-% Build the data file
-analog_increment = 1.0 / frequency;
-
-end_time = analog_increment * num_frames;
-time = linspace(0.0,end_time,num_frames);
-
-% Output the marker file
+% Output the file
 for i = 1:num_frames
-    fprintf(mID,"%0.16f\t",time(i));
-    points_str = sprintf("%0.16f\t",data(i,:));
+    fprintf(mID,"%0.16f\t",data(i,1));
+    data_str = sprintf("%0.16f\t",data(i,2:end));
     % Remap NaNs to OpenSim compatible nan string
-    points_str = strrep(points_str, 'NaN', 'nan');
-    fprintf(mID, '%s\n', points_str);
+    data_str = strrep(data_str, 'NaN', 'nan');
+    fprintf(mID, '%s\n', data_str);
 end
 
 fclose(mID);

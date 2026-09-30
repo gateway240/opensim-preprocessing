@@ -18,11 +18,14 @@ while ischar(line)
         key = matlab.lang.makeValidName(strtrim(token{1}));
         value = strtrim(token{2});
         numericValue = str2double(value);
+
         if ~isnan(numericValue)
             value = numericValue;
         end
+
         header.(key) = value;
     end
+
     line = fgetl(fid);
 end
 
@@ -39,17 +42,17 @@ if ~ischar(line)
     error('readMot:InvalidFile', 'Missing column header line.');
 end
 
-labels = regexp(strtrim(line), '\s+', 'split');
+labels = string(regexp(strtrim(line), '\s+', 'split'));
 nColumns = numel(labels);
 
 values = fscanf(fid, '%f');
+
 if mod(numel(values), nColumns) ~= 0
     error('readMot:InvalidData', 'Data rows have inconsistent column counts.');
 end
 
 values = reshape(values, nColumns, []).';
-variableNames = matlab.lang.makeUniqueStrings( ...
-    matlab.lang.makeValidName(labels));
 
-data = array2table(values, 'VariableNames', variableNames);
+data = values;
+
 end

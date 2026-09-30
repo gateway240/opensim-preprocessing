@@ -55,13 +55,16 @@ for i = 1:size(TRIALS,1)
     output_file = fullfile(OUTPUT_PATH, output_full_name);
     fprintf("Starting on file: %s\n", output_file);
 
-    time = table2array(data(2:10,1));
+    % TODO: figure out why OpenSim time isn't uniform according to
+    % isUniform
+    time = data(:,1)';
     time_end = time(end);
     time_begin = time(1);
-    [tf,step] = isuniform(time, 'TimeTolerance', 1e-6);
+
     % Start filtering
     Fc = CUTOFF_FREQUENCY;
-    Fs = (time_end - time_begin);
+    % Fs = (length(time) - 1) / (time_end - time_begin);
+    Fs = 1 / mean(diff(time));
     % Second order filter forwards-backwards is effectively fourth order
     n = FILTER_ORDER;
     % From Winter Biomechanics and Motor Control p. 69
@@ -73,8 +76,11 @@ for i = 1:size(TRIALS,1)
 
     [b,a] = butter(n,Wn,'low');
 
-    % [status, output] = extractMarkers(c3d, marker_file, INPUT_PATH, rotm);
-    % fprintf("Status: %d\n%s", status, output);
+    % Filter all columns except time
+    data(:,2:end) = filtfilt(b, a, data(:, 2:end));
+
+    [status, output] = writeMotFile(data, labels, header, output_file);
+    fprintf("Status: %d\n%s", status, output);
 
 end
 fprintf("Finished all trials!\n");
