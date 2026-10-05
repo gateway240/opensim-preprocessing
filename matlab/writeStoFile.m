@@ -39,10 +39,7 @@ header = sprintf('%s\t', columns);
 fprintf(mID,"time\t%s\n", header);
 
 % Build the data file
-analog_increment = 1.0 / frequency;
-
-end_time = analog_increment * num_frames;
-time = linspace(0.0,end_time,num_frames);
+time = (0:num_frames-1) / frequency;
 
 % Output the marker file
 for i = 1:num_frames

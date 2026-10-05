@@ -47,10 +47,7 @@ point_xyz_header = strjoin(arrayfun(@(n) sprintf('X%d\tY%d\tZ%d', n, n, n), ...
 fprintf(mID,"\t\t%s\n", point_xyz_header);
 
 
-increment = 1.0 / frequency;
-
-end_time = increment * num_frames;
-time = linspace(0.0,end_time,num_frames);
+time = (0:num_frames-1) / frequency;
 
 % Rotate the table
 % Apply the transformation to every point (XYZ combo) for all frames
