@@ -1,4 +1,5 @@
-function [status, output] = writeStoFile(data, frequency, columns, output_path)
+function [status, output] = writeStoFile(data, frequency, columns, ...
+    output_path, time_start, time_end)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 arguments (Input)
@@ -6,6 +7,8 @@ arguments (Input)
     frequency
     columns
     output_path
+    time_start
+    time_end
 end
 
 arguments (Output)
@@ -41,8 +44,18 @@ fprintf(mID,"time\t%s\n", header);
 % Build the data file
 time = (0:num_frames-1) / frequency;
 
+% Slice data if times are valid
+index_start = 1;
+index_end = num_frames;
+if time_start >= 0.0 && time_end > 0.0 
+    index_start = find(time==time_start);
+    index_end = find(time==time_end);
+    output = output + sprintf('Trimming data between times (%f)-(%f) with indicies [%d]-[%d] \n', ...
+        time_start,  time_end, index_start, index_end);
+end
+
 % Output the marker file
-for i = 1:num_frames
+for i = index_start:index_end
     fprintf(mID,"%0.16f\t",time(i));
     points_str = sprintf("%0.16f\t",data(i,:));
     % Remap NaNs to OpenSim compatible nan string

@@ -1,5 +1,5 @@
-function [status, output] = writeMarkerTrcFile(data, frequency, units, ...
-    columns, input_path, output_path,  rotm)
+function [status, output] = writeMarkerTrcFile(data, frequency, ...
+    units, columns, input_path, output_path,  rotm, time_start, time_end)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 arguments (Input)
@@ -10,6 +10,8 @@ arguments (Input)
     input_path
     output_path
     rotm
+    time_start
+    time_end
 end
 
 arguments (Output)
@@ -49,12 +51,22 @@ fprintf(mID,"\t\t%s\n", point_xyz_header);
 
 time = (0:num_frames-1) / frequency;
 
+% Slice data if times are valid
+index_start = 1;
+index_end = num_frames;
+if time_start >= 0.0 && time_end > 0.0 
+    index_start = find(time==time_start);
+    index_end = find(time==time_end);
+    output = output + sprintf('Trimming data between times (%f)-(%f) with indicies [%d]-[%d] \n', ...
+        time_start,  time_end, index_start, index_end);
+end
+
 % Rotate the table
 % Apply the transformation to every point (XYZ combo) for all frames
 points_out = pagemtimes(rotm, data);
 
 % Output the marker file
-for i = 1:num_frames
+for i = index_start:index_end
     % MATLAB uses 1-based indexing :(
     frame = i - 1;
     fprintf(mID,"%d\t%0.16f\t",frame,time(i));

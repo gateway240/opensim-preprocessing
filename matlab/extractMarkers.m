@@ -1,4 +1,5 @@
-function [status, output] = extractMarkers(c3d, file, input_path, rotm)
+function [status, output] = extractMarkers(c3d, file, input_path, rotm, ...
+     time_start, time_end)
 %extractMarkers  Marker Extraction - TRIAL_markers.trc file
 %   Detailed explanation goes here
 arguments (Input)
@@ -6,6 +7,8 @@ arguments (Input)
     file
     input_path
     rotm
+    time_start
+    time_end
 end
 
 arguments (Output)
@@ -20,5 +23,5 @@ point_columns = string(c3d.parameters.POINT.LABELS.DATA);
 % Get data
 points = c3d.data.points;
 [status, output] = writeMarkerTrcFile(points, point_frequency, point_units,...
-    point_columns, input_path, file,  rotm);
+    point_columns, input_path, file,  rotm, time_start, time_end);
 end

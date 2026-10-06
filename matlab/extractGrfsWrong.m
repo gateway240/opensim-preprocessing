@@ -1,5 +1,5 @@
 function [status, output] = extractGrfsWrong(c3d, all_pf, output_file, rotm, fp_l, fp_r, ...
-    filter_order, filter_cutoff_frequency, force_minimum)
+    filter_order, filter_cutoff_frequency, force_minimum , time_start, time_end)
 %extractMarkers  Marker Extraction - TRIAL_markers.trc file
 %   Detailed explanation goes here
 arguments (Input)
@@ -12,6 +12,8 @@ arguments (Input)
     filter_order
     filter_cutoff_frequency
     force_minimum
+    time_start
+    time_end
 end
 
 arguments (Output)
@@ -82,5 +84,6 @@ for i = 1:length(grf_mapping)
     grfs_final(:,i) = filtfilt(b, a, grfs_prior(:,i));
 end
 % Write the sto file
-[status, output] = writeStoFile(grfs_final,analog_frequency,grf_columns,output_file);
+[status, output] = writeStoFile(grfs_final,analog_frequency,grf_columns, ...
+    output_file, time_start, time_end);
 end

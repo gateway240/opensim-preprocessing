@@ -12,13 +12,14 @@ OUTPUT_DIR = fullfile(HOME,"data","kuopio-full-body-dataset-results","s02_extrac
 
 PARTICIPANT = '09';
 MOCAP_SUBDIR = 'mocap';
-% name, left foot force plate (fp) index, right foot fp index
+% name, left foot force plate (fp) index, right foot fp index, start time,
+% end time
 TRIALS = [
-    ["static_cal" 0 0 ]
-    ["jogging" 4 5 ]
-    ["walking" 4 5 ]
-    ["squats_deep" 3 2]
-    ["squat_jumps" 3 2]
+    ["static_cal" 0 0 -1 -1]
+    ["jogging" 4 5 30.0 35.0]
+    ["walking" 4 5 22.0 26.0]
+    ["squats_deep" 3 2 7.0 10.0]
+    ["squat_jumps" 3 2 12.0 13.6]
     ];
 
 % Files will be named TRIAL+SUFFIX
@@ -53,6 +54,8 @@ for i = 1:size(TRIALS,1)
     trial_name = trial(1);
     fp_l = str2double(trial(2));
     fp_r = str2double(trial(3));
+    time_start = str2double(trial(4));
+    time_end = str2double(trial(5));
     %% C3D Loading
     c3d_file = fullfile(INPUT_PATH,strcat(trial_name,'.c3d'));
     fprintf("Starting to read c3d file: %s\n",c3d_file);
@@ -63,7 +66,8 @@ for i = 1:size(TRIALS,1)
     %% Marker Extraction - TRIAL_markers.trc file
     marker_file = fullfile(OUTPUT_PATH, strcat(trial_name,MARKERS_SUFFIX));
     fprintf("Starting on file: %s\n", marker_file);
-    [status, output] = extractMarkers(c3d, marker_file, INPUT_PATH, rotm);
+    [status, output] = extractMarkers(c3d, marker_file, INPUT_PATH, rotm, ...
+        time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
 
     % Do not continue processing if we don't have valid force plates
@@ -73,21 +77,21 @@ for i = 1:size(TRIALS,1)
     %% Analog Extraction - TRIAL_analog.sto file
     analog_file = fullfile(OUTPUT_PATH, strcat(trial_name,ANALOGS_SUFFIX));
     fprintf("Starting on file: %s\n", analog_file);
-    [status, output] = extractAnalogs(c3d,analog_file);
+    [status, output] = extractAnalogs(c3d,analog_file, time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
 
     %% GRF Extraction - TRIAL_grfs.sto file
     grf_file = fullfile(OUTPUT_PATH, strcat(trial_name,GRFS_SUFFIX));
     fprintf("Starting on file: %s\n", grf_file);
     [status, output] = extractGrfs(c3d, all_pf, grf_file, rotm, ...
-        fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_CUTOFF);
+        fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_CUTOFF, time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
 
     %% GRF Extraction [WRONG!] - TRIAL_grfs_wrong.sto file
     grf_file = fullfile(OUTPUT_PATH, strcat(trial_name,GRFS_WRONG_SUFFIX));
     fprintf("Starting on file: %s\n", grf_file);
     [status, output] = extractGrfsWrong(c3d, all_pf, grf_file, rotm, ...
-        fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_CUTOFF);
+        fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_CUTOFF, time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
 end
 fprintf("Finished all trials!\n");
