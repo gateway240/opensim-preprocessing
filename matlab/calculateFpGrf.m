@@ -39,6 +39,11 @@ for i = 1:length_frames
     cop = ref_frame * cop_raw' + mean_corners;
     tz = ref_frame * (m_raw' - cross(f_raw', -1 .* cop_raw'));
 
+    if ~valid
+        cop = mean_corners;
+        tz = [0; 0; 0];
+    end
+
     f = rotm * f;
     % m = rotm * m;
     cop = rotm * cop;
@@ -48,11 +53,6 @@ for i = 1:length_frames
     cop = cop ./ 1000;
     tz = tz ./ 1000;
     % m = m ./1000;
-
-    if ~valid
-        cop = NaN;
-        tz = NaN;
-    end
 
     % Corresponds with OpenSim extract ForceLocation::CenterOfPressure
     % Force 1:3
