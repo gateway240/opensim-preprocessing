@@ -17,7 +17,7 @@ MOCAP_SUBDIR = 'mocap';
 TRIALS = [
     ["static_cal" 0 0 -1 -1]
     ["jogging" 4 5 30.0 35.0]
-    ["walking" 4 5 22.0 26.0]
+    ["walking" 4 5 22.0 25.0]
     ["squats_deep" 3 2 7.0 10.0]
     ["squat_jumps" 3 2 12.0 13.6]
     ];
