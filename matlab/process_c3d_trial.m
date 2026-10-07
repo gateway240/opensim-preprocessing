@@ -42,7 +42,7 @@ MARKER_ROTATIONS = [-pi/2, pi/2, 0];
 % [-1,0,0]
 rotm = eulang2rotmat(MARKER_ROTATIONS,'XZY');
 
-GRF_CUTOFF = 2; %N
+GRF_CUTOFF = 1; %N
 
 % Low-pass parameters
 CUTOFF_FREQUENCY = 6; %Hz
